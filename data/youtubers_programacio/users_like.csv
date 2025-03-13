@@ -1,0 +1,4 @@
+id,usuari_id,video_id,tipus
+1,1,1,dislike
+2,1,2,like
+3,2,2,dislike

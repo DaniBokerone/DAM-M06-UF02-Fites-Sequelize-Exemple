@@ -15,13 +15,16 @@ const { sequelize } = require('./src/config/database');
 const { logger } = require('./src/config/logger');
 
 // Importar models
-const { Youtuber, PerfilYoutuber, Video, Categoria, VideosCategories } = require('./src/models');
+const { Youtuber, PerfilYoutuber, UsuariYoutube, VideoLikes, Comentari , Video, Categoria, VideosCategories } = require('./src/models');
 
 // Rutes als arxius CSV
 const BASE_PATH = path.join(__dirname, process.env.DATA_DIR_PATH, 'youtubers_programacio');
 const CSV_FILES = {
   YOUTUBERS: path.join(BASE_PATH, 'youtubers.csv'),
   PERFILS: path.join(BASE_PATH, 'youtuber_profiles.csv'),
+  USUARIS: path.join(BASE_PATH, 'youtuber_users.csv'),
+  COMENTARIS: path.join(BASE_PATH, 'users_coment.csv'),
+  vIDEO_LIKES: path.join(BASE_PATH, 'users_like.csv'),
   CATEGORIES: path.join(BASE_PATH, 'categories.csv'),
   VIDEOS: path.join(BASE_PATH, 'videos.csv'),
   VIDEOS_CATEGORIES: path.join(BASE_PATH, 'video_categories.csv')
@@ -109,6 +112,34 @@ async function carregarPerfils(perfils) {
 }
 
 /**
+ * Carrega els usuaris de Youtube
+ * @param {Array} usuaris Dades de usuaris
+ */
+async function carregarUsuaris(usuaris) {
+  try {
+    logger.info(`Carregant ${usuaris.length} usuaris...`);
+    
+    for (const usuari of usuaris) {
+      await UsuariYoutube.create({
+        id: usuari.id,
+        username: usuari.username,
+        email: usuari.email,
+        password: usuari.password,
+        nom: usuari.nom,
+        data_registre: usuari.data_registre,
+        idioma: usuari.idioma,
+
+      });
+    }
+    
+    logger.info("Usuaris carregats correctament");
+  } catch (error) {
+    logger.error("Error carregant usuaris:", error);
+    throw error;
+  }
+}
+
+/**
  * Carrega les categories
  * @param {Array} categories Dades de categories
  */
@@ -182,6 +213,54 @@ async function carregarVideosCategories(videos_categories) {
 }
 
 /**
+ * Carrega els comentaris d'un video
+ * @param {Array} comentaris Comentaris
+ */
+async function carregarComentaris(comentaris) {
+  try {
+    logger.info(`Carregant ${comentaris.length} comentaris...`);
+    
+    for (const comentari of comentaris) {
+      await Comentari.create({
+        id: comentari.id,
+        descripcio: comentari.descripcio,
+        usuari_id: comentari.usuari_id,
+        video_id: comentari.video_id
+      });
+    }
+    
+    logger.info("Comentaris carregats correctament");
+  } catch (error) {
+    logger.error("Error carregant comentaris:", error);
+    throw error;
+  }
+}
+
+/**
+ * Carrega els likes d'un video
+ * @param {Array} likes Likes
+ */
+async function carregarLikes(likes) {
+  try {
+    logger.info(`Carregant ${likes.length} likes...`);
+    
+    for (const like of likes) {
+      await VideoLikes.create({
+        id: like.id,
+        usuari_id: like.usuari_id,
+        video_id: like.video_id,
+        tipus: like.tipus,
+      });
+    }
+    
+    logger.info("Likes carregats correctament");
+  } catch (error) {
+    logger.error("Error carregant likes:", error);
+    throw error;
+  }
+}
+
+/**
  * Funció principal que coordina tot el procés de càrrega
  */
 async function carregarTotesDades() {
@@ -198,6 +277,9 @@ async function carregarTotesDades() {
     // Llegir dades dels arxius CSV
     const youtubers = await llegirFitxerCsv(CSV_FILES.YOUTUBERS);
     const perfils = await llegirFitxerCsv(CSV_FILES.PERFILS);
+    const usuaris = await llegirFitxerCsv(CSV_FILES.USUARIS);
+    const comentaris = await llegirFitxerCsv(CSV_FILES.COMENTARIS);
+    const likes = await llegirFitxerCsv(CSV_FILES.vIDEO_LIKES);
     const categories = await llegirFitxerCsv(CSV_FILES.CATEGORIES);
     const videos = await llegirFitxerCsv(CSV_FILES.VIDEOS);
     const videos_categories = await llegirFitxerCsv(CSV_FILES.VIDEOS_CATEGORIES);
@@ -205,9 +287,12 @@ async function carregarTotesDades() {
     // Carregar les dades en ordre per respectar dependències
     await carregarYoutubers(youtubers);
     await carregarPerfils(perfils);
+    await carregarUsuaris(usuaris);
     await carregarCategories(categories);
     await carregarVideos(videos);
     await carregarVideosCategories(videos_categories);
+    await carregarComentaris(comentaris);
+    await carregarLikes(likes);
     
     logger.info("Totes les dades han estat carregades correctament a la base de dades!");
     

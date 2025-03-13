@@ -62,11 +62,13 @@ jest.mock('../server', () => {
   const rutesYoutuber = require('../src/routes/rutesYoutuber');
   const rutesVideo = require('../src/routes/rutesVideo');
   const rutesCategoria = require('../src/routes/rutesCategoria');
+  const rutesUsuaris = require('../src/routes/rutesUsuaris');
   
   // Afegir les rutes
   app.use('/api/youtubers', rutesYoutuber);
   app.use('/api/videos', rutesVideo);
   app.use('/api/categories', rutesCategoria);
+  app.use('/api/usuaris', rutesUsuaris);
   
   // Afegir un middleware per al gestor d'errors
   const gestorErrors = require('../src/middleware/gestorErrors');
